@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sandeep's Dance Studio - Login</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: url('background.jpg') no-repeat center center/cover;
+      font-family: Arial, sans-serif;
+    }
+    .card {
+    background: #ddddddb3;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 4px 6px #ddd;
+    width: 300px;
+    text-align: center;
+}
+    .card h1 {
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+    .card input {
+      width: 90%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+     .card button {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, #4CAF50, #45a049); /* Gradient background */
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s ease, transform 0.2s ease;
+    }
+
+    .card button:hover {
+      background: linear-gradient(135deg, #45a049, #4CAF50); /* Reverse gradient on hover */
+      transform: scale(1.05); /* Slight zoom effect */
+    }
+
+    .card button:active {
+      transform: scale(0.95); /* Click effect */
+    }
+    .error {
+      color: red;
+      font-size: 14px;
+    }
+	.logo {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 50px; /* Adjust the size of the logo */
+  height: auto;
+  cursor: pointer;
+  opacity: 0.8; /* Slight transparency */
+  transition: opacity 0.3s;
+}
+.logo:hover {
+  opacity: 1; /* Fully visible on hover */
+}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Sandeep's Dance Studio</h1>
+    <input type="text" id="username" placeholder="Username">
+    <input type="password" id="password" placeholder="Password">
+    <div id="error" class="error"></div>
+    <button onclick="login()">Login</button>
+	<img src="logo.png" alt="Logo" class="logo" onclick="logoClick()">
+  </div>
+  <script>
+    function login() {
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const errorDiv = document.getElementById('error');
+
+      if (username === 'admin' && password === 'admin') {
+        window.location.href = 'batches.html';
+      } else {
+        errorDiv.textContent = 'Invalid credentials';
+      }
+    }
+  </script>
+</body>
+</html>

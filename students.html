@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student List</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background: url('background.jpg') no-repeat center center/cover;
+      height: 100vh;
+      color: white;
+    }
+    .container {
+      padding: 20px;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .header h2 {
+      margin: 0;
+    }
+    .student-list {
+      background: rgba(0, 0, 0, 0.7);
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    }
+    .student {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.8);
+      color: black;
+      padding: 10px;
+      margin: 5px 0;
+      border-radius: 5px;
+    }
+    .actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .mark-attendance, .delete-btn {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 5px 10px;
+      cursor: pointer;
+    }
+    .delete-btn {
+      background-color: #ff4d4d;
+    }
+    .mark-attendance:hover {
+      background-color: #45a049;
+    }
+    .delete-btn:hover {
+      background-color: #e60000;
+    }
+    .fee-status {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 10px;
+    }
+    .fee-status progress {
+      width: 100px;
+      height: 10px;
+      margin-top: 5px;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+    progress::-webkit-progress-bar {
+      background: #f3f3f3;
+      border-radius: 5px;
+    }
+    progress::-webkit-progress-value {
+      background: linear-gradient(135deg, #4caf50, #8bc34a);
+      border-radius: 5px;
+    }
+    .add-student {
+      display: block;
+      margin: 20px auto;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      text-align: center;
+    }
+    .add-student:hover {
+      background-color: #0056b3;
+    }
+    .popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.9);
+      padding: 50px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      display: none;
+      flex-direction: column;
+      color: white;
+    }
+    .popup label {
+      margin: 5px 0;
+    }
+    .popup input, .popup select {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: none;
+      border-radius: 5px;
+    }
+    .popup button {
+      padding: 10px 15px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .popup button.save {
+      background-color: #4CAF50;
+      color: white;
+    }
+    .popup button.cancel {
+      background-color: #ff4d4d;
+      color: white;
+      margin-left: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h2 id="batchTitle">Batch Name</h2>
+      <button class="add-student" onclick="openPopup()">Add Student</button>
+    </div>
+    <div class="student-list">
+      <h3>Students</h3>
+      <div id="students" class="loading">Loading students...</div>
+    </div>
+    <div class="popup" id="addStudentPopup">
+      <h3>Add Student</h3>
+      <label for="studentName">Name</label>
+      <input type="text" id="studentName" required>
+      <label for="studentDoj">Date of Joining</label>
+      <input type="date" id="studentDoj" required>
+      <label for="contactNumber">Contact Number</label>
+      <input type="text" id="contactNumber" required>
+      <label for="feesAmount">Fees</label>
+      <input type="number" id="feesAmount" required>
+      <label for="batchSelect">Batch</label>
+      <select id="batchSelect"></select>
+      <div>
+        <button class="save" onclick="saveStudent()">Save</button>
+        <button class="cancel" onclick="closePopup()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const batchId = params.get('batchId');
+    const batchName = params.get('batchName');
+    const studentContainer = document.getElementById('students');
+    const batchTitle = document.getElementById('batchTitle');
+    const addStudentPopup = document.getElementById('addStudentPopup');
+
+    batchTitle.textContent = batchName;
+
+    async function fetchStudents() {
+      try {
+        const response = await fetch(`http://localhost:8181/api/sds/student/list/${batchId}`);
+        const students = await response.json();
+        studentContainer.innerHTML = '';
+        students.forEach(student => {
+          const studentDiv = document.createElement('div');
+          studentDiv.className = 'student';
+          studentDiv.innerHTML = `
+            <span>${student.name}</span>
+            <div class="actions">
+              <button class="mark-attendance" onclick="markAttendance('${student.id}')">Mark Attendance</button>
+              <button class="delete-btn" onclick="deleteStudent('${student.id}')">Delete</button>
+            </div>
+          `;
+          studentContainer.appendChild(studentDiv);
+        });
+      } catch (error) {
+        studentContainer.innerHTML = `<div class="error">${error.message}</div>`;
+      }
+    }
+
+    function openPopup() {
+      addStudentPopup.style.display = 'flex';
+      fetchBatches();
+    }
+
+    function closePopup() {
+      addStudentPopup.style.display = 'none';
+    }
+
+    async function fetchBatches() {
+      const response = await fetch('http://localhost:8181/api/sds/batch/list');
+      const batches = await response.json();
+      const batchSelect = document.getElementById('batchSelect');
+      batchSelect.innerHTML = '';
+      batches.forEach(batch => {
+        const option = document.createElement('option');
+        option.value = batch.id;
+        option.textContent = batch.name;
+        batchSelect.appendChild(option);
+      });
+    }
+
+    async function saveStudent() {
+      const student = {
+        name: document.getElementById('studentName').value,
+        doj: document.getElementById('studentDoj').value,
+        contactNumber: document.getElementById('contactNumber').value,
+        feesAmount: parseFloat(document.getElementById('feesAmount').value),
+        batchId: document.getElementById('batchSelect').value
+      };
+
+      const response = await fetch('http://localhost:8181/api/sds/student/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(student)
+      });
+
+      if (response.ok) {
+        closePopup();
+        fetchStudents();
+      } else {
+        alert('Failed to save student!');
+      }
+    }
+
+    async function deleteStudent(studentId) {
+      const response = await fetch(`http://localhost:8181/api/sds/student/delete/${studentId}`, { method: 'DELETE' });
+
+      if (response.ok) {
+        fetchStudents();
+      } else {
+        alert('Failed to delete student!');
+      }
+    }
+
+    window.onload = fetchStudents;
+  </script>
+</body>
+</html>

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dance Batches</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background: url('background.jpg') no-repeat center center/cover;
+	  height: 100vh;
+      color: white;
+    }
+    .container {
+      padding: 20px;
+    }
+    .batch-list {
+      background: rgba(0, 0, 0, 0.7);
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    }
+    .batch-list h2 {
+      text-align: center;
+    }
+    .batch {
+      background: rgba(255, 255, 255, 0.8);
+      color: black;
+      padding: 10px;
+      margin: 5px 0;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .batch:hover {
+      background: rgba(255, 255, 255, 1);
+    }
+    .loading, .error {
+      text-align: center;
+      font-size: 18px;
+    }
+    .loading {
+      color: yellow;
+    }
+    .error {
+      color: red;
+    }
+	.logo {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 180px; /* Adjust the size of the logo */
+  height: auto;
+  cursor: pointer;
+  opacity: 0.8; /* Slight transparency */
+  transition: opacity 0.3s;
+}
+.logo:hover {
+  opacity: 1; /* Fully visible on hover */
+}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="batch-list">
+      <h2>Batch List</h2>
+      <div id="batches" class="loading">Loading batches...</div>
+	  <img src="logo.jpg" alt="Logo" class="logo" onclick="logoClick()">
+    </div>
+  </div>
+
+  <script>
+    const batchContainer = document.getElementById('batches');
+
+    // Fetch batches from backend
+    async function fetchBatches() {
+      try {
+        const response = await fetch('http://localhost:8181/api/sds/batch/list');
+        if (!response.ok) throw new Error('Failed to fetch batches');
+        const batches = await response.json();
+
+        batchContainer.innerHTML = ''; // Clear loading text
+        batches.forEach(batch => {
+          const batchDiv = document.createElement('div');
+          batchDiv.className = 'batch';
+          batchDiv.textContent = batch.name;
+          batchDiv.onclick = () => navigateToStudents(batch.id, batch.name);
+          batchContainer.appendChild(batchDiv);
+        });
+      } catch (error) {
+        batchContainer.innerHTML = `<div class="error">${error.message}</div>`;
+      }
+    }
+
+    // Navigate to students page with batchId and batchName
+    function navigateToStudents(batchId, batchName) {
+      const url = `students.html?batchId=${batchId}&batchName=${encodeURIComponent(batchName)}`;
+      window.location.href = url;
+    }
+
+    // Load batches on page load
+    window.onload = fetchBatches;
+  </script>
+</body>
+</html>
