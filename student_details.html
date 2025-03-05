@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Details - Sandeep Dance Studio</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: url('background.jpg') no-repeat center center/cover;
+            background-size: cover;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+			height: 100vh;
+            padding: 20px;
+        }
+        .student-container {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            width: 50%;
+            text-align: center;
+        }
+        .student-container h2 {
+            margin-bottom: 20px;
+        }
+        .student-info {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+        .student-info label {
+            font-weight: bold;
+            display: block;
+            margin-top: 10px;
+        }
+        .student-info input, .student-info select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        .button-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .button-container button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background: #ff5733;
+            color: white;
+            margin: 5px;
+        }
+        .button-container button:hover {
+            background: #c70039;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="student-container">
+        <h2>Student Details</h2>
+        <div class="student-info">
+            <label>Name:</label>
+            <input type="text" id="studentName" disabled>
+
+            <label>Date of Joining:</label>
+            <input type="date" id="doj" disabled>
+
+            <label>Contact Number:</label>
+            <input type="text" id="contactNumber" disabled>
+
+            <label>Fees:</label>
+            <input type="number" id="feesAmount" disabled>
+
+            <label>Gender:</label>
+            <select id="gender" disabled>
+                <option>Male</option>
+                <option>Female</option>
+            </select>
+
+            <label>Date of Birth:</label>
+            <input type="date" id="dateOfBirth" disabled>
+
+            <label>Batch:</label>
+            <select id="batchList" disabled></select>
+        </div>
+
+        <div class="button-container">
+            <button onclick="enableEdit()">Edit</button>
+            <button onclick="saveStudentDetails()" id="saveButton" style="display: none;">Save</button>
+            <button onclick="goBack()">Back</button>
+        </div>
+    </div>
+
+    <script>
+        const studentId = new URLSearchParams(window.location.search).get("studentId");
+
+        function fetchStudentDetails() {
+            fetch(`https://sandeep-dance-studio-backend-latest.onrender.com/api/sds/student/${studentId}`)
+                .then(response => response.json())
+                .then(student => {
+                    document.getElementById("studentName").value = student.name;
+                    document.getElementById("doj").value = student.doj;
+                    document.getElementById("contactNumber").value = student.contactNumber;
+                    document.getElementById("feesAmount").value = student.feesAmount;
+                    document.getElementById("gender").value = student.gender;
+                    document.getElementById("dateOfBirth").value = student.dateOfBirth;
+
+                    fetch("https://sandeep-dance-studio-backend-latest.onrender.com/api/sds/batch/list")
+                        .then(response => response.json())
+                        .then(batches => {
+                            const batchDropdown = document.getElementById("batchList");
+                            batchDropdown.innerHTML = "";
+                            batches.forEach(batch => {
+                                let option = document.createElement("option");
+                                option.value = batch.id;
+                                option.textContent = batch.name;
+                                if (batch.id === student.batchId) option.selected = true;
+                                batchDropdown.appendChild(option);
+                            });
+                        });
+                })
+                .catch(error => console.error("Error fetching student details:", error));
+        }
+
+        function enableEdit() {
+            document.querySelectorAll(".student-info input, .student-info select").forEach(input => {
+                input.disabled = false;
+            });
+            document.getElementById("saveButton").style.display = "inline-block";
+        }
+
+        function saveStudentDetails() {
+            const name = document.getElementById("studentName").value.trim();
+			const doj = document.getElementById("doj").value;
+			const contact = document.getElementById("contactNumber").value.trim();
+			const fees = document.getElementById("feesAmount").value;
+			const gender = document.getElementById("gender").value;
+			const dob = document.getElementById("dateOfBirth").value;
+			const batch = document.getElementById("batchList").value;
+
+			// Validation: Check if any field is empty
+			if (!name || !doj || !contact || !fees || !gender || !dob || !batch) {
+				alert("All fields are required. Please fill in all details.");
+				return;
+		}
+
+			const studentData = {
+				name, doj, contactNumber: contact,
+				feesAmount: parseFloat(fees), dateOfBirth: dob,
+				gender, batchId: batch
+    };
+
+            fetch(`https://sandeep-dance-studio-backend-latest.onrender.com/api/sds/student/update/${studentId}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(studentData)
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert("Student details updated successfully!");
+                    window.location.reload();
+                } else {
+                    alert("Error updating student details.");
+                }
+            })
+            .catch(error => console.error("Error updating student details:", error));
+        }
+
+        function goBack() {
+            window.history.back();
+        }
+
+        document.addEventListener("DOMContentLoaded", fetchStudentDetails);
+    </script>
+
+</body>
+</html>
