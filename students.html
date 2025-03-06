@@ -137,6 +137,14 @@
     
     <script>
         function openAddStudentPopup() {
+			document.getElementById("studentName").value = "";
+			document.getElementById("doj").value = "";
+			document.getElementById("contactNumber").value = "";
+			document.getElementById("feesAmount").value = "";
+			document.getElementById("gender").value = "Male";
+			document.getElementById("dateOfBirth").value = "";
+			document.getElementById("batchList").value = "";
+			
             document.getElementById("addStudentModal").style.display = "block";
         }
         function closeAddStudentPopup() {
